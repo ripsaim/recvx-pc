@@ -3,7 +3,7 @@
 usage: python pc/tools/make_share.py [--rando <path to cvx-rando.exe>]
 
 Writes build_pc/share/recvx-cvx-pc/ and build_pc/share/recvx-cvx-pc.zip containing recvx.exe,
-recvx-config.exe, SDL2.dll and a README. Nothing else is needed on the player's PC: the settings
+recvx-config.exe, recvx-launcher.exe, SDL2.dll and a README. Nothing else is needed on the player's PC: the settings
 app sets the game up from their own disc image (no Python). Deliberately left out: the ISO,
 extracted disc files (data/), converted movies, HD texture packs, recvx.ini (holds your local
 paths), saves, logs and input recordings.
@@ -24,7 +24,7 @@ import common
 BUILD = common.BUILD
 OUT = os.path.join(BUILD, "share", "recvx-cvx-pc")
 
-PROGRAM = ["recvx.exe", "recvx-config.exe", "SDL2.dll"]
+PROGRAM = ["recvx.exe", "recvx-config.exe", "recvx-launcher.exe", "SDL2.dll"]
 
 README = """Resident Evil Code: Veronica X - PC port (recvx-decomp)
 =====================================================
