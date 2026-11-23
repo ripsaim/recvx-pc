@@ -119,7 +119,38 @@ def main():
     if not os.path.exists(dll_dst) or os.path.getsize(dll_dst) != os.path.getsize(dll_src):
         shutil.copyfile(dll_src, dll_dst)
     print("built " + EXE)
-    return build_config(sdl, opts.debug)
+    result = build_config(sdl, opts.debug)
+    if result != 0:
+        return result
+    return build_launcher(opts.debug)
+
+
+def build_launcher(debug):
+    """Build recvx-launcher.exe, the standalone update-checking game entry point."""
+    src = os.path.join(common.ROOT, "pc", "launcher", "recvx_launcher.c")
+    exe = os.path.join(common.BUILD, "recvx-launcher.exe")
+    obj = os.path.join(OBJ_DIR, "recvx_launcher.obj")
+    res_dir = os.path.join(common.ROOT, "pc", "res")
+    deps = [src, os.path.join(res_dir, "version.h"),
+            os.path.join(common.ROOT, "pc", "launcher", "release_json.h")]
+    if os.path.exists(exe) and os.path.getmtime(exe) >= max(os.path.getmtime(d) for d in deps):
+        return 0
+    cmd = ["cl", "/nologo", "/W3", "/O2" if not debug else "/Od", "/MD", "/c",
+           "/I" + res_dir, "/Fo" + obj, src]
+    r = msvc.run(cmd, capture_output=True, text=True, errors="replace", cwd=common.ROOT)
+    if r.returncode != 0:
+        print("FAILED compiling recvx-launcher.exe")
+        print(r.stdout + r.stderr)
+        return 1
+    link = ["link", "/nologo", "/SUBSYSTEM:WINDOWS", "/MACHINE:X86", "/MANIFEST:EMBED",
+            "/OUT:" + exe, obj, "user32.lib", "gdi32.lib", "wininet.lib", "shell32.lib"]
+    r = msvc.run(link, capture_output=True, text=True, errors="replace", cwd=common.ROOT)
+    if r.returncode != 0:
+        print("FAILED linking recvx-launcher.exe")
+        print(r.stdout + r.stderr)
+        return 1
+    print("built " + exe)
+    return 0
 
 
 def compile_res(name):
