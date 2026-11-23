@@ -1,0 +1,38 @@
+name: Windows PC Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Check out repository and pinned submodules
+        uses: actions/checkout@v4
+        with:
+          ref: pc-port
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Build PC executables
+        shell: pwsh
+        run: python pc/tools/build.py --clean
+
+      - name: Create portable share package
+        shell: pwsh
+        run: python pc/tools/make_share.py
+
+      - name: Upload portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: recvx-cvx-pc-windows
+          path: build_pc/share/recvx-cvx-pc.zip
+          if-no-files-found: error
